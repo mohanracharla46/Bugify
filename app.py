@@ -171,6 +171,14 @@ def generate_report(current_user): # current_user is passed by the decorator
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        # Seed default user for testing if empty
+        if not User.query.filter_by(username='admin').first():
+            hashed_pw = generate_password_hash('password123', method='pbkdf2:sha256')
+            admin_user = User(username='admin', password_hash=hashed_pw)
+            db.session.add(admin_user)
+            db.session.commit()
+            print("DEBUG: Seeded default user (admin / password123)")
+            
     # Listen on 0.0.0.0 for cloud deployment (Render)
     port = int(os.environ.get('PORT', 5012))
     print(f"AI Bug Reporter is active on port {port}")
