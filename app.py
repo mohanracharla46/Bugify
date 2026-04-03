@@ -82,5 +82,7 @@ def generate_report():
         return jsonify({"error": f"AI Generation failed: {str(e)}"}), 500
 
 if __name__ == '__main__':
-    print(f"AI Bug Reporter is active at http://127.0.0.1:5000")
-    app.run(debug=True, port=5000, host='127.0.0.1')
+    # Listen on 0.0.0.0 for cloud deployment (Render)
+    port = int(os.environ.get('PORT', 5000))
+    print(f"AI Bug Reporter is active on port {port}")
+    app.run(debug=False, port=port, host='0.0.0.0')
