@@ -1,34 +1,4 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    // --- Auth Check ---
-    const userProfile = document.getElementById('userProfile');
-    const userNameDisplay = document.getElementById('userNameDisplay');
-    const mainContent = document.getElementById('mainContent');
-    const logoutBtn = document.getElementById('logoutBtn');
-
-    async function checkAuth() {
-        try {
-            const resp = await fetch('/auth/check');
-            const data = await resp.json();
-            if (data.authenticated) {
-                userProfile.style.display = 'flex';
-                userNameDisplay.textContent = `Hello, ${data.username}`;
-                mainContent.style.display = 'block';
-            } else {
-                window.location.href = '/auth.html';
-            }
-        } catch (err) {
-            console.error('Auth check failed:', err);
-            window.location.href = '/auth.html';
-        }
-    }
-
-    await checkAuth();
-
-    logoutBtn.addEventListener('click', async () => {
-        await fetch('/auth/logout', { method: 'POST' });
-        window.location.href = '/auth.html';
-    });
-
+document.addEventListener('DOMContentLoaded', () => {
     const bugInput = document.getElementById('bugInput');
     const generateBtn = document.getElementById('generateBtn');
     const clearBtn = document.getElementById('clearBtn');
