@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bugify</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="main-container">
+        <header>
+            <h1>Bugify <span class="sparkle">✨</span></h1>
+        </header>
+
+        <main>
+            <div class="input-wrapper">
+                <textarea id="bugInput" placeholder="Describe the bug and let Bugify do the rest..."></textarea>
+                
+                <div class="input-actions">
+                    <div class="left-actions">
+                        <button class="icon-btn" title="Voice Input (Mock)">🎙️</button>
+                        <button id="clearBtn" class="icon-btn" title="Clear">✖️</button>
+                    </div>
+                    <div class="right-actions" style="display: flex; align-items: center; gap: 1rem;">
+                        <span id="loadingStatusText" class="status-text" style="display: none; color: var(--accent-color); font-size: 0.95rem; font-weight: 500;">Thinking...</span>
+                        <button id="generateBtn" class="submit-btn" title="Generate Report" style="border-radius: 50%; width: 44px; height: 44px; padding: 0; justify-content: center; position: relative;">
+                            <span class="btn-text" style="display: flex; align-items: center;">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="1.5" stroke-linejoin="round">
+                                    <path d="M3 20L21 12L3 4V10.5L15 12L3 13.5V20Z"></path>
+                                </svg>
+                            </span>
+                            <span class="btn-stop" style="display: none; align-items: center; justify-content: center;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--text-primary)">
+                                    <rect x="4" y="4" width="16" height="16" rx="2" />
+                                </svg>
+                            </span>
+                            <div class="loader-circle"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="suggestions">
+                <button class="suggestion-pill" data-query="Clicking the checkout button randomly throws a 500 Internal Server Error after adding an item to the cart.">💳 Checkout throws 500 error</button>
+                <button class="suggestion-pill" data-query="Rotating the mobile device screen causes the login form to clear all inputted username and password data.">📱 Screen rotation clears login</button>
+                <button class="suggestion-pill" data-query="App completely crashes on startup. Logs show an out of memory exception. Happens only on older iPhones.">⚡ App crashes on startup</button>
+                <button class="suggestion-pill" data-query="API occasionally returns a 401 Unauthorized arbitrarily even when the user token is perfectly valid and not expired.">🛑 Arbitrary 401 Unauthorized</button>
+            </div>
+
+            <section id="resultSection" class="result-section hidden">
+                <div class="result-header">
+                    <h2>Bug Report</h2>
+                    <button id="copyBtn" class="copy-btn">Copy to Clipboard</button>
+                </div>
+                <div id="reportContent" class="report-content"></div>
+            </section>
+        </main>
+    </div>
+    <script src="main.js"></script>
+
+    <script>
+        // Fill the text area with the common error when a suggestion pill is clicked
+        document.querySelectorAll('.suggestion-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                document.getElementById('bugInput').value = pill.getAttribute('data-query');
+            });
+        });
+    </script>
+</body>
+</html>
