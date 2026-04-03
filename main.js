@@ -5,12 +5,76 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultSection = document.getElementById('resultSection');
     const reportContent = document.getElementById('reportContent');
     const copyBtn = document.getElementById('copyBtn');
+    const voiceBtn = document.getElementById('voiceBtn');
     const loadingStatusText = document.getElementById('loadingStatusText');
-    const statusMessages = ['Thinking...', 'Analyzing bug...', 'Running diagnostics...', 'Writing report...'];
+    const statusMessages = ['Thinking...', 'Analyzing bug...', 'Generating...', 'Writing report...'];
+
+    // --- Voice Input Logic ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    let isListening = false;
+
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => {
+            isListening = true;
+            voiceBtn.classList.add('listening');
+            voiceBtn.title = 'Stop Listening';
+            bugInput.placeholder = 'Listening...';
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = Array.from(event.results)
+                .map(result => result[0])
+                .map(result => result.transcript)
+                .join('');
+
+            bugInput.value = transcript;
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech Recognition Error:', event.error);
+            stopListening();
+        };
+
+        recognition.onend = () => {
+            stopListening();
+        };
+    } else {
+        voiceBtn.style.display = 'none'; // Hide if not supported
+        console.warn('Speech recognition not supported in this browser.');
+    }
+
+    function stopListening() {
+        isListening = false;
+        voiceBtn.classList.remove('listening');
+        voiceBtn.title = 'Voice Input';
+        bugInput.placeholder = 'Describe the bug and let Bugify do the rest...';
+        if (recognition) recognition.stop();
+    }
+
+    voiceBtn.addEventListener('click', () => {
+        if (!recognition) return;
+
+        if (isListening) {
+            stopListening();
+        } else {
+            try {
+                recognition.start();
+            } catch (err) {
+                console.error('Could not start recognition:', err);
+            }
+        }
+    });
+
 
     generateBtn.addEventListener('click', async () => {
         const bugDescription = bugInput.value.trim();
-        
+
         if (!bugDescription) {
             alert('Please provide a raw bug description first.');
             return;
@@ -21,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Start Loading ---
         generateBtn.classList.add('btn-loading');
         generateBtn.disabled = true;
-        
+
         loadingStatusText.style.display = 'block';
         let statusIdx = 0;
         loadingStatusText.textContent = statusMessages[statusIdx];
@@ -49,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const report = await response.json();
             console.log('Received report:', report);
             renderReport(report);
-            
+
             // --- Show Result ---
             resultSection.classList.remove('hidden');
             resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -92,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         items.forEach(item => {
             const labelEl = item.querySelector('.report-label');
             const valueEl = item.querySelector('.report-value');
-            
+
             if (labelEl && valueEl) {
                 const label = labelEl.textContent.trim();
                 const value = valueEl.innerText.trim();
@@ -114,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderReport(report) {
         const severityClass = `severity-${(report.severity || 'Medium').toLowerCase()}`;
         const priorityClass = `severity-${(report.priority || 'Medium').toLowerCase()}`;
-        
+
         reportContent.innerHTML = `
             <div class="report-item">
                 <span class="report-label">🔹 Improved Bug Description</span>

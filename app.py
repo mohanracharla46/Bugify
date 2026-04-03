@@ -3,13 +3,17 @@ import json
 import requests
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+from dotenv import load_dotenv
+
+# Load key from .env file
+load_dotenv()
 
 # Configure Flask to serve static files from the current directory
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
 # Configuration for Gemini API
-GEMINI_API_KEY = "AIzaSyAbd8wyXRA_yDqsz43dYhI62mwcV0Yt8ik"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_API_KEY_HERE")
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
 
 def generate_with_gemini(prompt):
@@ -77,8 +81,12 @@ def generate_report():
         return jsonify(report_data)
         
     except requests.exceptions.HTTPError as e:
-        return jsonify({"error": f"API Error: {str(e)}"}), 500
+        # Hide the URL (which contains the API key) from the user error message
+        status_code = e.response.status_code
+        reason = e.response.reason
+        return jsonify({"error": f"API Error: {status_code} {reason}. Please try again later."}), status_code
     except Exception as e:
+        # Hide the full traceback and just show the error message
         return jsonify({"error": f"AI Generation failed: {str(e)}"}), 500
 
 if __name__ == '__main__':
