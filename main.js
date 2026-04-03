@@ -32,8 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // CALLING THE FLASK BACKEND
-            // Using 127.0.0.1 for local communication
-            const response = await fetch('http://127.0.0.1:5000/generate', {
+            // Using relative path for production compatibility (Render)
+            const response = await fetch('/generate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || 'Backend failed to respond. Make sure app.py is running.');
+                throw new Error(errorData.error || 'Backend failed to respond.');
             }
 
             const report = await response.json();
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } catch (error) {
             console.error('Generation Error:', error);
-            alert(`Error: ${error.message}. Is the backend running at http://127.0.0.1:5000?`);
+            alert(`Error: ${error.message}. Is the backend running?`);
         } finally {
             clearInterval(statusInterval);
             loadingStatusText.style.display = 'none';
