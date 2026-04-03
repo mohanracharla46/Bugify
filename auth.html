@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bugify - Authentication</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .auth-card {
+            background-color: var(--input-bg);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            z-index: -1;
+            background: conic-gradient(from 0deg, transparent, #4285f4, #ff9ff3, #ff9f43, transparent);
+            animation: rotateBorder 4s linear infinite;
+        }
+
+        .auth-card-inner {
+            background: var(--input-bg);
+            border-radius: 23px;
+            padding: 1rem;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, #fff, #c4c7c5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-left: 0.5rem;
+        }
+
+        .form-group input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            color: #fff;
+            font-family: var(--font-main);
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: #4285f4;
+        }
+
+        .auth-btn {
+            background: linear-gradient(135deg, #4285f4, #00d2ff);
+            border: none;
+            color: #fff;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            margin-top: 1rem;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .auth-toggle span {
+            color: #4285f4;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .auth-toggle span:hover {
+            text-decoration: underline;
+        }
+
+        .status-msg {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            min-height: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <header>
+            <h1 onclick="window.location.href='/'" style="cursor: pointer;">Bugify <span class="sparkle">✨</span></h1>
+        </header>
+
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-card-inner">
+                    <div class="auth-header">
+                        <h2 id="formTitle">Welcome Back</h2>
+                        <p id="formSubtitle" style="color: var(--text-secondary);">Log in to your account</p>
+                    </div>
+
+                    <form id="authForm" class="auth-form">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" placeholder="Enter your username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" id="submitBtn" class="auth-btn">Log In</button>
+                    </form>
+
+                    <div id="statusMsg" class="status-msg"></div>
+
+                    <div class="auth-toggle">
+                        <span id="toggleLink">Don't have an account? Sign Up</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const authForm = document.getElementById('authForm');
+        const formTitle = document.getElementById('formTitle');
+        const formSubtitle = document.getElementById('formSubtitle');
+        const submitBtn = document.getElementById('submitBtn');
+        const toggleLink = document.getElementById('toggleLink');
+        const statusMsg = document.getElementById('statusMsg');
+
+        let isLogin = true;
+
+        toggleLink.addEventListener('click', () => {
+            isLogin = !isLogin;
+            formTitle.textContent = isLogin ? 'Welcome Back' : 'Join Bugify';
+            formSubtitle.textContent = isLogin ? 'Log in to your account' : 'Create a new account';
+            submitBtn.textContent = isLogin ? 'Log In' : 'Sign Up';
+            toggleLink.textContent = isLogin ? "Don't have an account? Sign Up" : "Already have an account? Log In";
+            statusMsg.textContent = '';
+        });
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const endpoint = isLogin ? '/auth/login' : '/auth/signup';
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusMsg.style.color = '#10b981';
+                    statusMsg.textContent = isLogin ? 'Login successful! Redirecting...' : 'Account created! You can now log in.';
+                    
+                    if (isLogin) {
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1000);
+                    } else {
+                        isLogin = true;
+                        // Trigger toggle UI update
+                        toggleLink.click();
+                        toggleLink.click(); // Hacky toggle back
+                    }
+                } else {
+                    statusMsg.style.color = '#f28b82';
+                    statusMsg.textContent = data.message || 'Something went wrong';
+                }
+            } catch (err) {
+                statusMsg.style.color = '#f28b82';
+                statusMsg.textContent = 'Connection error';
+            }
+        });
+    </script>
+</body>
+</html>
