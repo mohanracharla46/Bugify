@@ -16,10 +16,21 @@ CORS(app)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_API_KEY_HERE")
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
 
-def generate_with_gemini(prompt):
+def generate_with_gemini(prompt, image_data=None):
     headers = {"Content-Type": "application/json"}
+    
+    parts = [{"text": "You are a senior software engineer and QA expert. Return only valid JSON without any markdown formatting.\n\n" + prompt}]
+    
+    if image_data:
+        parts.append({
+            "inlineData": {
+                "mimeType": "image/jpeg",  # Common default
+                "data": image_data
+            }
+        })
+
     payload = {
-        "contents": [{"parts": [{"text": "You are a senior software engineer and QA expert. Return only valid JSON without any markdown formatting.\n\n" + prompt}]}],
+        "contents": [{"parts": parts}],
         "generationConfig": {
             "responseMimeType": "application/json"
         }
@@ -39,21 +50,24 @@ def home():
 def generate_report():
     data = request.get_json()
     bug_description = data.get('bug')
+    image_data = data.get('image')  # Local base64 string without data prefix
     
     if not bug_description:
         return jsonify({"error": "No bug description provided"}), 400
 
-    print(f"DEBUG: Generating report using Gemini for: {bug_description[:50]}...")
+    print(f"DEBUG: Generating report using Gemini for: {bug_description[:50]}... (Image attached: {bool(image_data)})")
 
     # The prompt logic provided by the user
     prompt = f"""
     Analyze this raw bug description and generate a complete, professional, and structured bug report.
+    {"An image/screenshot has been provided to help you understand the issue visually." if image_data else ""}
 
     Bug Description:
     \"\"\"{bug_description}\"\"\"
 
     Instructions:
     - Improve clarity and fill missing technical details if needed.
+    - If an image is provided, use it to verify details, UI elements, or error messages visible in the screenshot.
     - Think step-by-step like a real engineer debugging the issue.
     - Return ONLY a valid JSON object following this format:
 
@@ -76,8 +90,8 @@ def generate_report():
     """
 
     try:
-        # Calling the Gemini API using requests
-        report_data = generate_with_gemini(prompt)
+        # Calling the Gemini API with optional image
+        report_data = generate_with_gemini(prompt, image_data)
         return jsonify(report_data)
         
     except requests.exceptions.HTTPError as e:

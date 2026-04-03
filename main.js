@@ -6,8 +6,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const reportContent = document.getElementById('reportContent');
     const copyBtn = document.getElementById('copyBtn');
     const voiceBtn = document.getElementById('voiceBtn');
+    const imageBtn = document.getElementById('imageBtn');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const imageThumbnail = document.getElementById('imageThumbnail');
+    const fileIconContainer = document.getElementById('fileIconContainer');
+    const removeImageBtn = document.getElementById('removeImageBtn');
     const loadingStatusText = document.getElementById('loadingStatusText');
     const statusMessages = ['Thinking...', 'Analyzing bug...', 'Generating...', 'Writing report...'];
+
+    let currentImageBase64 = null;
+
+    // --- Image Input Logic ---
+    imageBtn.addEventListener('click', () => {
+        imageInput.click();
+    });
+
+    imageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const isImage = file.type.startsWith('image/');
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                currentImageBase64 = event.target.result;
+                
+                if (isImage) {
+                    imageThumbnail.src = currentImageBase64;
+                    imageThumbnail.classList.remove('hidden');
+                    fileIconContainer.classList.add('hidden');
+                } else {
+                    imageThumbnail.classList.add('hidden');
+                    fileIconContainer.classList.remove('hidden');
+                }
+                
+                imagePreviewContainer.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    removeImageBtn.addEventListener('click', () => {
+        currentImageBase64 = null;
+        imageInput.value = '';
+        imagePreviewContainer.classList.add('hidden');
+    });
 
     // --- Voice Input Logic ---
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -102,7 +144,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ bug: bugDescription }),
+                body: JSON.stringify({ 
+                    bug: bugDescription,
+                    image: currentImageBase64 ? currentImageBase64.split(',')[1] : null // Send only the base64 part
+                }),
             });
 
             if (!response.ok) {
